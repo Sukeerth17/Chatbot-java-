@@ -43,7 +43,7 @@ public class HallucinationGuardService {
                 .conversationId(0L)
                 .question("AUTO_FLAGGED_LOW_CONFIDENCE")
                 .answer(answer == null ? "" : answer)
-                .rating(-1)
+                .rating((byte) -1)
                 .comment("Automatically flagged by HallucinationGuardService")
                 .flagged(true)
                 .build();

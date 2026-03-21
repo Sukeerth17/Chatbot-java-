@@ -79,7 +79,7 @@ app:
     business:
       url: ${BUSINESS_DB_URL:jdbc:mysql://localhost:3306/chatbot_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
       username: ${BUSINESS_DB_USER:chatbot_user}
-      password: ${BUSINESS_DB_PASS:StrongPassword123!}
+      password: ${BUSINESS_DB_PASS:root}
       driver-class-name: com.mysql.cj.jdbc.Driver
 
   ollama:

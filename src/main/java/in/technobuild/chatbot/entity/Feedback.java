@@ -41,7 +41,7 @@ public class Feedback {
     private String answer;
 
     @Column(name = "rating", nullable = false)
-    private Integer rating;
+    private Byte rating;
 
     @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;

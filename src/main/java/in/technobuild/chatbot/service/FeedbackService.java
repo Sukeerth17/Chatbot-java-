@@ -36,7 +36,7 @@ public class FeedbackService {
                 .conversationId(conversationId)
                 .question(question)
                 .answer(answer)
-                .rating(rating)
+                .rating((byte) rating)
                 .comment(comment)
                 .flagged(rating == -1)
                 .build();

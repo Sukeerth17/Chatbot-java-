@@ -12,7 +12,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     List<Feedback> findByFlaggedTrue();
 
-    List<Feedback> findByRating(Integer rating);
+    List<Feedback> findByRating(Byte rating);
 
     List<Feedback> findByConversationId(Long conversationId);
 }

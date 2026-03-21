@@ -1,6 +1,7 @@
 package in.technobuild.chatbot.config;
 
 import in.technobuild.chatbot.security.JwtAuthFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/health", "/ready", "/actuator/health", "/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()

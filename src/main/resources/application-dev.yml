@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/chatbot_db
+    username: chatbot_user
+    password: StrongPassword123!
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    in.technobuild: DEBUG
+    org.springframework.kafka: INFO
+    org.hibernate.SQL: DEBUG
+
+chatbot:
+  rate-limit:
+    requests-per-minute: 100
+    daily-token-limit: 999999
+  cache:
+    enabled: false
+  ollama:
+    base-url: http://localhost:11434
+  python:
+    base-url: http://localhost:8000
