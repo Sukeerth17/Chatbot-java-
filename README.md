@@ -18,8 +18,52 @@
 - Java 17
 - Maven (or use `./mvnw`)
 - Docker + Docker Compose
-- Ollama
+- Ollama (required for LLM inference)
 - Python 3.10+
+
+## LLM Requirement
+Yes. This service requires a local LLM runtime via Ollama and will not be fully ready without the required models.
+
+Required models:
+- `llama3.1:8b-instruct-q4_K_M` (chat)
+- `qwen3:8b` (SQL)
+- `nomic-embed-text` (embeddings)
+
+## Install Ollama
+### macOS
+Option 1 (Homebrew):
+```bash
+brew install --cask ollama
+```
+
+Option 2:
+- Download and install from https://ollama.com/download
+
+### Windows
+Option 1 (winget):
+```powershell
+winget install Ollama.Ollama
+```
+
+Option 2:
+- Download and install from https://ollama.com/download
+
+After install, start Ollama:
+- macOS/Linux:
+  ```bash
+  ollama serve
+  ```
+- Windows (PowerShell):
+  ```powershell
+  ollama serve
+  ```
+
+Download required models:
+```bash
+ollama pull llama3.1:8b-instruct-q4_K_M
+ollama pull qwen3:8b
+ollama pull nomic-embed-text
+```
 
 ## Quick Start
 1. Clone this repository.
@@ -28,38 +72,23 @@
    ```bash
    docker-compose up -d
    ```
-4. Start Ollama:
+4. Ensure Ollama is running and required models are downloaded.
+5. Start Python AI service.
+   If your Python AI service is in a sibling folder (`techno_build_bot-main`):
    ```bash
-   ollama serve
+   cd ../techno_build_bot-main
+   python -m pip install -r requirements.txt
+   python -m uvicorn app:app --reload --port 8000
    ```
-5. Pull chat model:
+6. Start chatbot service:
    ```bash
-   ollama pull llama3.1:8b-instruct-q4_K_M
+   cd /path/to/chatbot-backend
+   ./mvnw spring-boot:run --spring.profiles.active=dev
    ```
-6. Pull SQL model:
+7. Verify readiness:
    ```bash
-   ollama pull qwen3:8b
+   curl http://localhost:8085/ready
    ```
-7. Pull embedding model:
-   ```bash
-   ollama pull nomic-embed-text
-   ```
-8. Start Python AI service dependencies:
-   ```bash
-   cd python-service && pip install -r requirements.txt
-   ```
-9. Start Python AI service:
-   ```bash
-   uvicorn app:app --reload --port 8000
-   ```
-10. Start chatbot service:
-    ```bash
-    ./mvnw spring-boot:run --spring.profiles.active=dev
-    ```
-11. Verify readiness:
-    ```bash
-    curl http://localhost:8085/ready
-    ```
 
 ## API Endpoints
 | Method | Path | Description |
