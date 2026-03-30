@@ -1,6 +1,5 @@
 package in.technobuild.chatbot.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import in.technobuild.chatbot.client.PythonAiClient;
 import in.technobuild.chatbot.dto.response.IngestionStatusDto;
 import in.technobuild.chatbot.entity.Document;
@@ -42,7 +41,6 @@ public class DocumentIngestionService {
     private final VectorChunkRepository vectorChunkRepository;
     private final DocumentRepository documentRepository;
     private final IngestionProducer ingestionProducer;
-    private final ObjectMapper objectMapper;
 
     @Qualifier("byteArrayRedisTemplate")
     private final RedisTemplate<String, byte[]> byteArrayRedisTemplate;
@@ -136,12 +134,12 @@ public class DocumentIngestionService {
             List<VectorChunk> vectorChunks = new ArrayList<>(pairCount);
             for (int i = 0; i < pairCount; i++) {
                 String chunk = chunks.get(i);
-                String embeddingJson = objectMapper.writeValueAsString(embeddings.get(i));
+                String embeddingVector = toPgVectorLiteral(embeddings.get(i));
 
                 vectorChunks.add(VectorChunk.builder()
                         .documentId(document.getId())
                         .content(chunk)
-                        .embedding(embeddingJson)
+                        .embedding(embeddingVector)
                         .chunkIndex(i)
                         .tokenCount(countWords(chunk))
                         .heading(extractHeading(chunk))
@@ -315,5 +313,20 @@ public class DocumentIngestionService {
 
     private String fileRedisKey(String jobId) {
         return "ingestion:file:" + jobId;
+    }
+
+    private String toPgVectorLiteral(List<Float> embedding) {
+        if (embedding == null || embedding.isEmpty()) {
+            return "[]";
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < embedding.size(); i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(embedding.get(i));
+        }
+        sb.append(']');
+        return sb.toString();
     }
 }

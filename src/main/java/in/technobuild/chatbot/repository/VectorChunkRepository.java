@@ -17,10 +17,18 @@ public interface VectorChunkRepository extends JpaRepository<VectorChunk, Long> 
     void deleteByDocumentId(Long documentId);
 
     @Query(value = "SELECT * FROM vector_chunks WHERE " +
-            "MATCH(content) AGAINST (:query IN BOOLEAN MODE) " +
+            "to_tsvector('english', content) @@ plainto_tsquery('english', :query) " +
             "AND (:category IS NULL OR category = :category) " +
             "LIMIT :limit", nativeQuery = true)
     List<VectorChunk> findByFullText(@Param("query") String query,
                                      @Param("category") String category,
                                      @Param("limit") int limit);
+
+    @Query(value = "SELECT * FROM vector_chunks WHERE " +
+            "(:category IS NULL OR category = :category) " +
+            "ORDER BY embedding <=> CAST(:queryVector AS vector) " +
+            "LIMIT :limit", nativeQuery = true)
+    List<VectorChunk> findByVectorSimilarity(@Param("queryVector") String queryVector,
+                                             @Param("category") String category,
+                                             @Param("limit") int limit);
 }

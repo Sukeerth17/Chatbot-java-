@@ -1,12 +1,14 @@
 # Chatbot Service
 
+Repository: https://github.com/Sukeerth17/Technobuild-Chatbot.git
+
 ## Overview
 `chatbot-service` is a Spring Boot microservice that powers secure enterprise chat, SQL Q&A, RAG document ingestion, moderation, and audit-ready observability.
 
 ## Tech Stack
 - Java 17, Spring Boot 3.2.x
 - Spring Web, WebFlux, Validation, Security, Actuator
-- Spring Data JPA, MySQL, Flyway
+- Spring Data JPA, PostgreSQL (+ pgvector for KB), Flyway
 - Redis (history cache, TTL storage)
 - Apache Kafka (async orchestration)
 - Ollama (chat/sql/embedding models)
@@ -110,7 +112,7 @@ ollama pull nomic-embed-text
 ## Environment Variables
 | Name | Required | Description |
 |---|---|---|
-| `CHATBOT_DB_URL` | Yes | JDBC URL for chatbot DB |
+| `CHATBOT_DB_URL` | Yes | JDBC URL for chatbot DB (PostgreSQL) |
 | `CHATBOT_DB_USER` | Yes | DB username for chatbot DB |
 | `CHATBOT_DB_PASS` | Yes | DB password for chatbot DB |
 | `BUSINESS_DB_URL` | Yes | JDBC URL for business readonly DB |
@@ -134,7 +136,7 @@ The service follows a 13-layer architecture: Controllers -> DTOs -> Security -> 
 ```
 
 ## Troubleshooting
-- `Access denied for user ...`: verify MySQL user/password grants and DB name (`chatbot_db`).
+- `Database authentication failed`: verify PostgreSQL user/password and DB name (`chatbot_db`).
 - `Flyway validation failed`: run repair or reset the target schema history after failed migrations.
 - `Kafka connection refused`: ensure `docker-compose up -d` is running and `localhost:9092` is reachable.
 - `/ready` shows `DOWN` for Ollama: start `ollama serve` and pull required models.

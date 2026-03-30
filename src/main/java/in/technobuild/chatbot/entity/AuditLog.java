@@ -51,7 +51,7 @@ public class AuditLog {
     @Column(name = "question_hash", length = 64)
     private String questionHash;
 
-    @Column(name = "doc_ids_retrieved", columnDefinition = "JSON")
+    @Column(name = "doc_ids_retrieved", columnDefinition = "jsonb")
     private String docIdsRetrieved;
 
     @Column(name = "response_hash", length = 64)

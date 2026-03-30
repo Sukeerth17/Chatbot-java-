@@ -39,7 +39,7 @@ public class VectorChunk {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "embedding", nullable = false, columnDefinition = "JSON")
+    @Column(name = "embedding", nullable = false, columnDefinition = "vector(768)")
     private String embedding;
 
     @Column(name = "chunk_index", nullable = false)
