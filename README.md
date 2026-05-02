@@ -130,6 +130,11 @@ ollama pull nomic-embed-text
 ## Architecture
 The service follows a 13-layer architecture: Controllers -> DTOs -> Security -> Validation/Guards -> Routing -> Orchestration -> Services -> Kafka Producers/Consumers -> Persistence Repositories -> Entity Model -> External AI Clients -> Observability/Audit -> Health/Readiness controls.
 
+## Must-Include Security Gap Fix
+- SQL flow must be refactored so Java is the enforcement authority for SQL safety:
+  generate SQL -> validate with `SqlValidationService` -> execute with readonly DB via `SqlExecutionService`.
+- Current SQL flow depends on Python `/getResponse` returning rows, which adds an extra network hop and weakens centralized guardrail enforcement.
+
 ## Running Tests
 ```bash
 ./mvnw test

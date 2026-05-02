@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: ${CHATBOT_DB_URL}
+    username: ${CHATBOT_DB_USER}
+    password: ${CHATBOT_DB_PASS}
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 3000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    show-sql: false
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP}
+    listener:
+      concurrency: 3
+    consumer:
+      auto-offset-reset: earliest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    in.technobuild.chatbot: INFO
+  file:
+    name: /var/log/chatbot/application.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+
+server:
+  forward-headers-strategy: framework
+
+chatbot:
+  rate-limit:
+    requests-per-minute: 30
+    daily-token-limit: 50000
+  cache:
+    enabled: true

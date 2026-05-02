@@ -51,6 +51,7 @@ public class AuditLog {
     @Column(name = "question_hash", length = 64)
     private String questionHash;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "doc_ids_retrieved", columnDefinition = "jsonb")
     private String docIdsRetrieved;
 

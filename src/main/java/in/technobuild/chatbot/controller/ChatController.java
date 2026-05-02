@@ -23,6 +23,7 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,18 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
 public class ChatController {
+    private static final List<String> RAW_TABLE_BROWSE_PATTERNS = List.of(
+            "first five rows",
+            "first 5 rows",
+            "first ten rows",
+            "first 10 rows",
+            "show first",
+            "top 5 rows",
+            "top five rows",
+            "select * from",
+            "rows of table",
+            "entire table"
+    );
 
     private final ChatRequestProducer chatRequestProducer;
     private final SqlRequestProducer sqlRequestProducer;
@@ -104,6 +117,15 @@ public class ChatController {
                     .build();
 
             if (modelRouterService.isSqlIntent(scrubbedMessage)) {
+                if (isRawTableBrowseRequest(scrubbedMessage)) {
+                    String deniedResponse = "I can't provide raw table rows. Please ask a business question "
+                            + "(for example, count, summary, or specific KPI).";
+                    emitter.send(SseEmitter.event().data(deniedResponse));
+                    emitter.send(SseEmitter.event().name("complete").data("[DONE]"));
+                    emitter.complete();
+                    sseEmitterRegistry.remove(messageId);
+                    return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
+                }
                 SqlRequestEvent sqlEvent = SqlRequestEvent.builder()
                         .messageId(messageId)
                         .userId(userId)
@@ -194,5 +216,13 @@ public class ChatController {
             throw new AccessDeniedException("User not authenticated");
         }
         return Long.parseLong(user.getUserId());
+    }
+
+    private boolean isRawTableBrowseRequest(String message) {
+        if (message == null || message.isBlank()) {
+            return false;
+        }
+        String normalized = message.toLowerCase(Locale.ROOT);
+        return RAW_TABLE_BROWSE_PATTERNS.stream().anyMatch(normalized::contains);
     }
 }

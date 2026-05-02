@@ -11,6 +11,7 @@ import in.technobuild.chatbot.service.SqlExecutionService;
 import in.technobuild.chatbot.service.SqlGenerationService;
 import in.technobuild.chatbot.sse.SseEventPublisher;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,18 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class SqlConsumer {
+    private static final List<String> RAW_TABLE_BROWSE_PATTERNS = List.of(
+            "first five rows",
+            "first 5 rows",
+            "first ten rows",
+            "first 10 rows",
+            "show first",
+            "top 5 rows",
+            "top five rows",
+            "select * from",
+            "rows of table",
+            "entire table"
+    );
 
     private final SqlGenerationService sqlGenerationService;
     private final OllamaService ollamaService;
@@ -37,6 +50,13 @@ public class SqlConsumer {
     public void consume(SqlRequestEvent event, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         try {
             log.info("Received event from topic {}: {}", topic, event);
+            if (isRawTableBrowseRequest(event.getOriginalQuestion())) {
+                String deniedResponse = "I can't provide raw table rows. Please ask a business question "
+                        + "(for example, count, summary, or specific KPI).";
+                sseEventPublisher.sendToken(event.getMessageId(), deniedResponse);
+                sseEventPublisher.sendComplete(event.getMessageId());
+                return;
+            }
 
             boolean firstRequest = event.getSessionId() == null || event.getSessionId().isBlank();
             SqlGenerationService.PythonSqlResponse pythonResponse =
@@ -85,5 +105,13 @@ public class SqlConsumer {
             log.error("SQL consumer failed for messageId={}", event.getMessageId(), ex);
             sseEventPublisher.sendError(event.getMessageId(), "Something went wrong. Please try again.");
         }
+    }
+
+    private boolean isRawTableBrowseRequest(String message) {
+        if (message == null || message.isBlank()) {
+            return false;
+        }
+        String normalized = message.toLowerCase(Locale.ROOT);
+        return RAW_TABLE_BROWSE_PATTERNS.stream().anyMatch(normalized::contains);
     }
 }
