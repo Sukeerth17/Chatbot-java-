@@ -22,8 +22,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ConversationService {
 
-    private static final int HISTORY_LIMIT = 8;
-    private static final int HISTORY_TOKEN_LIMIT = 4000;
+    private static final int HISTORY_LIMIT = 4;
+    private static final int HISTORY_TOKEN_LIMIT = 1500;
     private static final Duration REDIS_TTL = Duration.ofHours(24);
 
     private final ConversationRepository conversationRepository;

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PromptBuilderService {
 
-    @Value("${chatbot.system-prompt:You are a helpful assistant.}")
+    @Value("${chatbot.system-prompt:You are TechnoBuild AI, an expert CRM assistant for the sales team. You must answer questions based STRICTLY on the [DOCUMENTS] provided. Do not invent or hallucinate answers. If the [DOCUMENTS] do not contain the answer, politely state that you do not have that information. Keep answers concise. User Name: {userName}, Role: {userRole}, Date: {currentDateTime}})")
     private String configuredSystemPrompt;
 
     public String buildChatPrompt(String systemPrompt,
@@ -42,8 +42,8 @@ public class PromptBuilderService {
     }
 
     public String buildSqlFormattingPrompt(String sqlResult, String originalQuestion) {
-        return "Convert the following SQL rows into plain English. "
-                + "Keep the answer under 150 words and within 2 sentences.\n"
+        return "You are TechnoBuild AI, an expert data analyst. Convert the following raw database rows into a clear, professional plain English summary for a sales representative. "
+                + "Keep the answer under 100 words. Do not mention 'SQL', 'database', or 'rows'. Just provide the business answer.\n"
                 + "Question: " + originalQuestion + "\n"
                 + "SQL Rows: " + sqlResult + "\n"
                 + "Answer:";

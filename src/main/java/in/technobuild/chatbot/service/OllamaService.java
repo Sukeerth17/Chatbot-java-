@@ -29,7 +29,7 @@ public class OllamaService {
 
     @CircuitBreaker(name = "ollama", fallbackMethod = "fallbackResponse")
     public void streamChatResponse(String prompt, Consumer<String> tokenConsumer) {
-        Map<String, Object> request = baseRequest(prompt, true);
+        Map<String, Object> request = baseRequest(prompt, true, null);
 
         ollamaWebClient.post()
                 .uri("/api/chat")
@@ -41,8 +41,12 @@ public class OllamaService {
     }
 
     public String generateChatResponse(String prompt) {
+        return generateChatResponse(prompt, null);
+    }
+
+    public String generateChatResponse(String prompt, String modelOverride) {
         try {
-            Map<String, Object> request = baseRequest(prompt, false);
+            Map<String, Object> request = baseRequest(prompt, false, modelOverride);
             String response = ollamaWebClient.post()
                     .uri("/api/chat")
                     .bodyValue(request)
@@ -110,9 +114,9 @@ public class OllamaService {
         }
     }
 
-    private Map<String, Object> baseRequest(String prompt, boolean stream) {
+    private Map<String, Object> baseRequest(String prompt, boolean stream, String modelOverride) {
         Map<String, Object> body = new HashMap<>();
-        body.put("model", chatModel);
+        body.put("model", modelOverride != null && !modelOverride.isBlank() ? modelOverride : chatModel);
         body.put("stream", stream);
         body.put("keep_alive", "300s");
 

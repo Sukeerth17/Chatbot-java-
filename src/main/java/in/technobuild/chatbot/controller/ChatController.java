@@ -116,29 +116,40 @@ public class ChatController {
                     .timestamp(System.currentTimeMillis())
                     .build();
 
-            if (modelRouterService.isSqlIntent(scrubbedMessage)) {
-                if (isRawTableBrowseRequest(scrubbedMessage)) {
-                    String deniedResponse = "I can't provide raw table rows. Please ask a business question "
-                            + "(for example, count, summary, or specific KPI).";
-                    emitter.send(SseEmitter.event().data(deniedResponse));
-                    emitter.send(SseEmitter.event().name("complete").data("[DONE]"));
-                    emitter.complete();
-                    sseEmitterRegistry.remove(messageId);
-                    return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
-                }
-                SqlRequestEvent sqlEvent = SqlRequestEvent.builder()
-                        .messageId(messageId)
-                        .userId(userId)
-                        .sessionId(conversation.getSessionId())
-                        .originalQuestion(scrubbedMessage)
-                        .conversationId(conversation.getId())
-                        .timestamp(System.currentTimeMillis())
-                        .build();
-                sqlRequestProducer.publish(sqlEvent);
-                log.info("SQL request published for messageId={}", messageId);
-            } else {
-                chatRequestProducer.publish(event);
-                log.info("Chat request published for messageId={}", messageId);
+            ModelRouterService.RequestType intent = modelRouterService.routeRequest(scrubbedMessage);
+
+            switch (intent) {
+                case SQL:
+                    if (isRawTableBrowseRequest(scrubbedMessage)) {
+                        String deniedResponse = "I can't provide raw table rows. Please ask a business question "
+                                + "(for example, count, summary, or specific KPI).";
+                        emitter.send(SseEmitter.event().data(deniedResponse));
+                        emitter.send(SseEmitter.event().name("complete").data("[DONE]"));
+                        emitter.complete();
+                        sseEmitterRegistry.remove(messageId);
+                        return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
+                    }
+                    SqlRequestEvent sqlEvent = SqlRequestEvent.builder()
+                            .messageId(messageId)
+                            .userId(userId)
+                            .sessionId(conversation.getSessionId())
+                            .originalQuestion(scrubbedMessage)
+                            .conversationId(conversation.getId())
+                            .timestamp(System.currentTimeMillis())
+                            .build();
+                    sqlRequestProducer.publish(sqlEvent);
+                    log.info("SQL request published for messageId={}", messageId);
+                    break;
+
+                case KNOWLEDGE:
+                    chatRequestProducer.publish(event);
+                    log.info("KNOWLEDGE request published to chat-requests for messageId={}", messageId);
+                    break;
+
+                case CHAT:
+                    chatRequestProducer.publish(event);
+                    log.info("CHAT request published to chat-requests for messageId={}", messageId);
+                    break;
             }
             return ResponseEntity.ok().contentType(MediaType.TEXT_EVENT_STREAM).body(emitter);
         } catch (IOException ex) {
